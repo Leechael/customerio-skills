@@ -20,7 +20,7 @@ func captureStdout(t *testing.T, fn func()) string {
 	os.Stdout = old
 
 	var buf bytes.Buffer
-	buf.ReadFrom(r)
+	_, _ = buf.ReadFrom(r)
 	return buf.String()
 }
 
@@ -42,7 +42,7 @@ func TestPrintPretty(t *testing.T) {
 
 	t.Run("empty object", func(t *testing.T) {
 		out := captureStdout(t, func() {
-			Print(json.RawMessage(`{}`), "")
+			_ = Print(json.RawMessage(`{}`), "")
 		})
 		if strings.TrimSpace(out) != "{}" {
 			t.Fatalf("got %q", out)
@@ -51,7 +51,7 @@ func TestPrintPretty(t *testing.T) {
 
 	t.Run("array", func(t *testing.T) {
 		out := captureStdout(t, func() {
-			Print(json.RawMessage(`[1,2,3]`), "")
+			_ = Print(json.RawMessage(`[1,2,3]`), "")
 		})
 		if !strings.Contains(out, "[\n") {
 			t.Fatalf("not indented:\n%s", out)

@@ -68,7 +68,7 @@ func TestGet(t *testing.T) {
 			if r.Header.Get("Authorization") != "Bearer test-token" {
 				t.Errorf("auth = %s", r.Header.Get("Authorization"))
 			}
-			w.Write([]byte(`{"ok":true}`))
+			_, _ = w.Write([]byte(`{"ok":true}`))
 		})
 		data, err := c.Get("/v1/test", nil)
 		if err != nil {
@@ -84,7 +84,7 @@ func TestGet(t *testing.T) {
 			if r.URL.Query().Get("email") != "a@b.com" {
 				t.Errorf("query = %s", r.URL.RawQuery)
 			}
-			w.Write([]byte(`{}`))
+			_, _ = w.Write([]byte(`{}`))
 		})
 		q := url.Values{"email": {"a@b.com"}}
 		_, err := c.Get("/v1/test", q)
@@ -96,7 +96,7 @@ func TestGet(t *testing.T) {
 	t.Run("http error", func(t *testing.T) {
 		c := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(401)
-			w.Write([]byte(`{"error":"unauthorized"}`))
+			_, _ = w.Write([]byte(`{"error":"unauthorized"}`))
 		})
 		_, err := c.Get("/v1/test", nil)
 		if err == nil {
@@ -142,7 +142,7 @@ func TestPost(t *testing.T) {
 			if string(body) != `{"name":"test"}` {
 				t.Errorf("body = %s", body)
 			}
-			w.Write([]byte(`{"id":1}`))
+			_, _ = w.Write([]byte(`{"id":1}`))
 		})
 		data, err := c.Post("/v1/test", json.RawMessage(`{"name":"test"}`))
 		if err != nil {
@@ -159,7 +159,7 @@ func TestPost(t *testing.T) {
 			if len(body) != 0 {
 				t.Errorf("expected empty body, got %s", body)
 			}
-			w.Write([]byte(`{}`))
+			_, _ = w.Write([]byte(`{}`))
 		})
 		_, err := c.Post("/v1/test", nil)
 		if err != nil {
@@ -176,7 +176,7 @@ func TestPost(t *testing.T) {
 			if string(body) != `{"name":"hello"}` {
 				t.Errorf("body = %s", body)
 			}
-			w.Write([]byte(`{}`))
+			_, _ = w.Write([]byte(`{}`))
 		})
 		_, err := c.Post("/v1/test", req{Name: "hello"})
 		if err != nil {
@@ -190,7 +190,7 @@ func TestPut(t *testing.T) {
 		if r.Method != http.MethodPut {
 			t.Errorf("method = %s", r.Method)
 		}
-		w.Write([]byte(`{"updated":true}`))
+		_, _ = w.Write([]byte(`{"updated":true}`))
 	})
 	data, err := c.Put("/v1/test", json.RawMessage(`{}`))
 	if err != nil {

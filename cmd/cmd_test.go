@@ -36,7 +36,7 @@ func setupTestServer(t *testing.T, handler http.HandlerFunc) func() {
 
 func resetFlags(cmd *cobra.Command) {
 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
-		f.Value.Set(f.DefValue)
+		_ = f.Value.Set(f.DefValue)
 		f.Changed = false
 	})
 	for _, sub := range cmd.Commands() {
@@ -60,7 +60,7 @@ func executeCommand(args ...string) (string, error) {
 	os.Stdout = old
 
 	var buf bytes.Buffer
-	buf.ReadFrom(r)
+	_, _ = buf.ReadFrom(r)
 	return buf.String(), err
 }
 
@@ -72,7 +72,7 @@ func TestSegmentsList(t *testing.T) {
 		if r.Method != http.MethodGet {
 			t.Errorf("method = %s", r.Method)
 		}
-		w.Write([]byte(`{"segments":[{"id":1,"name":"VIP"}]}`))
+		_, _ = w.Write([]byte(`{"segments":[{"id":1,"name":"VIP"}]}`))
 	})
 	defer cleanup()
 
@@ -87,7 +87,7 @@ func TestSegmentsList(t *testing.T) {
 
 func TestSegmentsListAlias(t *testing.T) {
 	cleanup := setupTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{"segments":[]}`))
+		_, _ = w.Write([]byte(`{"segments":[]}`))
 	})
 	defer cleanup()
 
@@ -105,7 +105,7 @@ func TestSegmentsGet(t *testing.T) {
 		if r.URL.Path != "/v1/segments/42" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"segment":{"id":42}}`))
+		_, _ = w.Write([]byte(`{"segment":{"id":42}}`))
 	})
 	defer cleanup()
 
@@ -120,7 +120,7 @@ func TestSegmentsGet(t *testing.T) {
 
 func TestSegmentsGetMissingArg(t *testing.T) {
 	cleanup := setupTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	})
 	defer cleanup()
 
@@ -168,7 +168,7 @@ func TestSegmentsCount(t *testing.T) {
 		if r.URL.Path != "/v1/segments/5/customer_count" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"count":123}`))
+		_, _ = w.Write([]byte(`{"count":123}`))
 	})
 	defer cleanup()
 
@@ -190,7 +190,7 @@ func TestCollectionsContentGetPutMerge(t *testing.T) {
 			if r.URL.Path != "/v1/collections/10/content" {
 				t.Errorf("path = %s", r.URL.Path)
 			}
-			w.Write([]byte(`{"data":"rows"}`))
+			_, _ = w.Write([]byte(`{"data":"rows"}`))
 		})
 		defer cleanup()
 
@@ -208,7 +208,7 @@ func TestCollectionsContentGetPutMerge(t *testing.T) {
 			if r.Method != http.MethodPut {
 				t.Errorf("expected PUT, got %s", r.Method)
 			}
-			w.Write([]byte(`{"ok":true}`))
+			_, _ = w.Write([]byte(`{"ok":true}`))
 		})
 		defer cleanup()
 
@@ -231,7 +231,7 @@ func TestCampaignsTranslationMerge(t *testing.T) {
 			if r.URL.Path != "/v1/campaigns/1/actions/2/language/en" {
 				t.Errorf("path = %s", r.URL.Path)
 			}
-			w.Write([]byte(`{"lang":"en"}`))
+			_, _ = w.Write([]byte(`{"lang":"en"}`))
 		})
 		defer cleanup()
 
@@ -249,7 +249,7 @@ func TestCampaignsTranslationMerge(t *testing.T) {
 			if r.Method != http.MethodPut {
 				t.Errorf("expected PUT, got %s", r.Method)
 			}
-			w.Write([]byte(`{}`))
+			_, _ = w.Write([]byte(`{}`))
 		})
 		defer cleanup()
 
@@ -268,7 +268,7 @@ func TestCustomersSearchByEmail(t *testing.T) {
 		if r.URL.Query().Get("email") != "user@test.com" {
 			t.Errorf("email = %s", r.URL.Query().Get("email"))
 		}
-		w.Write([]byte(`{"results":[]}`))
+		_, _ = w.Write([]byte(`{"results":[]}`))
 	})
 	defer cleanup()
 
@@ -286,7 +286,7 @@ func TestCustomersSearchByBody(t *testing.T) {
 		if r.URL.Path != "/v1/customers" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"results":[]}`))
+		_, _ = w.Write([]byte(`{"results":[]}`))
 	})
 	defer cleanup()
 
@@ -304,7 +304,7 @@ func TestSendEmail(t *testing.T) {
 		if r.URL.Path != "/v1/send/email" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"delivery_id":"abc"}`))
+		_, _ = w.Write([]byte(`{"delivery_id":"abc"}`))
 	})
 	defer cleanup()
 
@@ -319,7 +319,7 @@ func TestSendEmail(t *testing.T) {
 
 func TestJQFilter(t *testing.T) {
 	cleanup := setupTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{"segments":[{"name":"VIP"},{"name":"Free"}]}`))
+		_, _ = w.Write([]byte(`{"segments":[{"name":"VIP"},{"name":"Free"}]}`))
 	})
 	defer cleanup()
 
@@ -335,7 +335,7 @@ func TestJQFilter(t *testing.T) {
 func TestHTTPError(t *testing.T) {
 	cleanup := setupTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(403)
-		w.Write([]byte(`{"error":"forbidden"}`))
+		_, _ = w.Write([]byte(`{"error":"forbidden"}`))
 	})
 	defer cleanup()
 
@@ -356,7 +356,7 @@ func TestBroadcastsTrigger(t *testing.T) {
 		if r.URL.Path != "/v1/campaigns/7/triggers" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"id":"trig-1"}`))
+		_, _ = w.Write([]byte(`{"id":"trig-1"}`))
 	})
 	defer cleanup()
 
@@ -374,7 +374,7 @@ func TestEspSuppressionSuppress(t *testing.T) {
 		if r.URL.Path != "/v1/esp_suppression/bad@test.com" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	})
 	defer cleanup()
 
@@ -390,7 +390,7 @@ func TestWebhooksGetPutMerge(t *testing.T) {
 			if r.Method != http.MethodGet {
 				t.Errorf("expected GET, got %s", r.Method)
 			}
-			w.Write([]byte(`{"webhook":{}}`))
+			_, _ = w.Write([]byte(`{"webhook":{}}`))
 		})
 		defer cleanup()
 
@@ -405,7 +405,7 @@ func TestWebhooksGetPutMerge(t *testing.T) {
 			if r.Method != http.MethodPut {
 				t.Errorf("expected PUT, got %s", r.Method)
 			}
-			w.Write([]byte(`{}`))
+			_, _ = w.Write([]byte(`{}`))
 		})
 		defer cleanup()
 
@@ -424,7 +424,7 @@ func TestSnippetsUpsert(t *testing.T) {
 		if r.URL.Path != "/v1/snippets" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	})
 	defer cleanup()
 
@@ -439,7 +439,7 @@ func TestObjectsGet(t *testing.T) {
 		if r.URL.Path != "/v1/objects/companies/acme/attributes" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"object":{}}`))
+		_, _ = w.Write([]byte(`{"object":{}}`))
 	})
 	defer cleanup()
 
@@ -454,7 +454,7 @@ func TestExportsDownload(t *testing.T) {
 		if r.URL.Path != "/v1/exports/55/download" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"url":"https://dl.example.com/file.csv"}`))
+		_, _ = w.Write([]byte(`{"url":"https://dl.example.com/file.csv"}`))
 	})
 	defer cleanup()
 
@@ -476,7 +476,7 @@ func TestNewsletterTranslationMerge(t *testing.T) {
 			if r.URL.Path != "/v1/newsletters/8/language/fr" {
 				t.Errorf("path = %s", r.URL.Path)
 			}
-			w.Write([]byte(`{"lang":"fr"}`))
+			_, _ = w.Write([]byte(`{"lang":"fr"}`))
 		})
 		defer cleanup()
 
@@ -492,7 +492,7 @@ func TestTransactionalDeliveries(t *testing.T) {
 		if r.URL.Path != "/v1/transactional/12/deliveries" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"deliveries":[]}`))
+		_, _ = w.Write([]byte(`{"deliveries":[]}`))
 	})
 	defer cleanup()
 
@@ -507,7 +507,7 @@ func TestInfoIPAddresses(t *testing.T) {
 		if r.URL.Path != "/v1/info/ip_addresses" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"addresses":["1.2.3.4"]}`))
+		_, _ = w.Write([]byte(`{"addresses":["1.2.3.4"]}`))
 	})
 	defer cleanup()
 
@@ -525,7 +525,7 @@ func TestIndexAttributes(t *testing.T) {
 		if r.URL.Path != "/v1/index/attributes" {
 			t.Errorf("path = %s", r.URL.Path)
 		}
-		w.Write([]byte(`{"attributes":[]}`))
+		_, _ = w.Write([]byte(`{"attributes":[]}`))
 	})
 	defer cleanup()
 
@@ -537,7 +537,7 @@ func TestIndexAttributes(t *testing.T) {
 
 func TestRequireBodyMissing(t *testing.T) {
 	cleanup := setupTestServer(t, func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`{}`))
+		_, _ = w.Write([]byte(`{}`))
 	})
 	defer cleanup()
 
