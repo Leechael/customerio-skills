@@ -24,10 +24,10 @@ jobs:
         run: go test -v -race ./internal/... ./cmd/...
 
       - name: Build binary for BDD tests
-        run: go build -o cio .
+        run: go build -o "$RUNNER_TEMP/cio" .
 
       - name: Run BDD tests
-        run: CIO_BINARY=$PWD/cio go test -v ./test/...
+        run: CIO_BINARY="$RUNNER_TEMP/cio" go test -v ./test/...
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
