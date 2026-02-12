@@ -14,6 +14,19 @@ make build    # → bin/cio
 
 ```bash
 export CUSTOMERIO_API_TOKEN="your-app-api-key"
+cio status   # verify connectivity
+```
+
+### Using 1Password CLI (recommended)
+
+Avoid storing your API token in plaintext by using [1Password CLI](https://developer.1password.com/docs/service-accounts/use-with-1password-cli):
+
+```bash
+# .env file with 1Password secret reference
+CUSTOMERIO_API_TOKEN=op://vault-name/Customer.io/api-token
+
+# Run any cio command with the secret injected
+op run --env-file=.env -- cio status
 ```
 
 ## Usage
@@ -33,6 +46,7 @@ Run `cio --help` for all commands, or `cio <command> --help` for subcommand deta
 
 | Command | Description |
 |---------|-------------|
+| `status` | Check API token and connectivity |
 | `customers` | Manage customers |
 | `segments` | Manage segments |
 | `campaigns` | Manage campaigns |

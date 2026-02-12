@@ -5,7 +5,65 @@ description: Interact with the Customer.io App API via the cio CLI. Use this ski
 
 # Customer.io CLI (`cio`)
 
-A CLI tool wrapping the Customer.io App API. Requires `CUSTOMERIO_API_TOKEN` environment variable.
+A CLI tool wrapping the Customer.io App API.
+
+## Prerequisites
+
+Before using this skill, ensure the `cio` CLI is installed and authenticated.
+
+### 1. Install `cio`
+
+Check if `cio` is available:
+
+```bash
+command -v cio || echo "NOT INSTALLED"
+```
+
+If not installed, download the latest release for the current platform:
+
+```bash
+# Detect OS and architecture
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+case "$ARCH" in
+  x86_64) ARCH="amd64" ;;
+  aarch64|arm64) ARCH="arm64" ;;
+esac
+
+# Download latest release
+curl -sL "https://github.com/Leechael/customerio-skills/releases/latest/download/cio-${OS}-${ARCH}" -o /usr/local/bin/cio
+chmod +x /usr/local/bin/cio
+```
+
+If `/usr/local/bin` is not writable, use `~/.local/bin` or another directory in `$PATH`.
+
+### 2. Configure API Token
+
+Run `cio status` to check authentication:
+
+```bash
+cio status
+```
+
+If the token is not configured, the user needs to set `CUSTOMERIO_API_TOKEN`:
+
+```bash
+export CUSTOMERIO_API_TOKEN="your-app-api-key"
+```
+
+Get an App API key from: https://fly.customer.io/settings/api_credentials
+
+**Recommended: use 1Password CLI** to avoid storing secrets in shell config:
+
+```bash
+# Create a .env file referencing a 1Password secret
+echo 'CUSTOMERIO_API_TOKEN=op://vault-name/Customer.io/api-token' > .env
+
+# Run cio with the secret injected automatically
+op run --env-file=.env -- cio status
+```
+
+This way the token is never written to disk in plaintext. See https://developer.1password.com/docs/service-accounts/use-with-1password-cli for setup.
 
 ## Quick Reference
 
@@ -13,6 +71,9 @@ A CLI tool wrapping the Customer.io App API. Requires `CUSTOMERIO_API_TOKEN` env
 # Global flags
 cio --region eu ...          # Use EU region (default: us)
 cio ... --jq '.field'        # Filter JSON output with jq expression
+
+# Status
+cio status                                           # Check auth and connectivity
 
 # Customers
 cio customers ls                                     # List customers (POST with empty filter)
