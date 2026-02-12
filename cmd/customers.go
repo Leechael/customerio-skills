@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/url"
 
@@ -47,9 +48,12 @@ func init() {
 				}
 				return printJSON(data)
 			}
-			body, err := requireBody(cmd)
+			body, err := readBody(cmd)
 			if err != nil {
 				return err
+			}
+			if body == nil {
+				body = json.RawMessage(`{}`)
 			}
 			data, err := c.Post("/v1/customers", body)
 			if err != nil {
@@ -70,9 +74,12 @@ func init() {
 			if err != nil {
 				return err
 			}
-			body, err := requireBody(cmd)
+			body, err := readBody(cmd)
 			if err != nil {
 				return err
+			}
+			if body == nil {
+				body = json.RawMessage(`{}`)
 			}
 			data, err := c.Post("/v1/customers/attributes", body)
 			if err != nil {

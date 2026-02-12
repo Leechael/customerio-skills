@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -55,9 +56,12 @@ func init() {
 			if err != nil {
 				return err
 			}
-			body, err := requireBody(cmd)
+			body, err := readBody(cmd)
 			if err != nil {
 				return err
+			}
+			if body == nil {
+				body = json.RawMessage(`{}`)
 			}
 			data, err := c.Post(fmt.Sprintf("/v1/campaigns/%s/triggers", args[0]), body)
 			if err != nil {

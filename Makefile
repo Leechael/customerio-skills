@@ -1,4 +1,5 @@
 BINARY  := cio
+BINDIR  := bin
 MODULE  := github.com/leechael/cio
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 COMMIT  := $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
@@ -19,7 +20,7 @@ PLATFORMS := \
 
 ## build: Build for current platform
 build:
-	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BINARY) .
+	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BINDIR)/$(BINARY) .
 
 ## all: Cross-compile for all platforms
 all: $(PLATFORMS)
@@ -40,7 +41,7 @@ test-unit:
 
 ## test-bdd: Build binary and run BDD tests
 test-bdd: build
-	CIO_BINARY=$(CURDIR)/$(BINARY) go test -v ./test/...
+	CIO_BINARY=$(CURDIR)/$(BINDIR)/$(BINARY) go test -v ./test/...
 
 ## lint: Run golangci-lint
 lint:
@@ -52,8 +53,7 @@ release-snapshot:
 
 ## clean: Remove build artifacts
 clean:
-	rm -f $(BINARY)
-	rm -rf dist/
+	rm -rf $(BINDIR)/ dist/
 
 ## help: Show this help
 help:
