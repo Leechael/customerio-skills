@@ -76,9 +76,9 @@ make all            # Cross-compile all platforms → dist/
 make help           # Show all targets
 ```
 
-## Claude Code Skill
+## Agent Skill
 
-This repo includes a [Claude Code skill](skills/customerio/SKILL.md) for AI-assisted Customer.io management. Install with:
+This repo includes an [agent skill](skills/customerio/SKILL.md) for AI-assisted Customer.io management. Install with:
 
 ```bash
 npx skills add Leechael/customerio-skills
