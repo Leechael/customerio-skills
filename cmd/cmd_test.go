@@ -620,4 +620,3 @@ func TestSubcommandCounts(t *testing.T) {
 		})
 	}
 }
-
