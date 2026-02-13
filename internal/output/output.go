@@ -54,3 +54,21 @@ func Print(data json.RawMessage, jqExpr string) error {
 	}
 	return nil
 }
+
+func PrintPlain(data json.RawMessage) error {
+	var compact bytes.Buffer
+	if err := json.Compact(&compact, data); err != nil {
+		_, writeErr := os.Stdout.Write(data)
+		if writeErr != nil {
+			return writeErr
+		}
+		_, writeErr = os.Stdout.Write([]byte("\n"))
+		if writeErr != nil {
+			return writeErr
+		}
+		return err
+	}
+	compact.WriteByte('\n')
+	_, err := compact.WriteTo(os.Stdout)
+	return err
+}

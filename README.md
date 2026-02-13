@@ -38,7 +38,12 @@ cio campaigns ls --jq '.campaigns[0].name'
 cio send email --body '{"to":"u@e.com","transactional_message_id":"1"}'
 ```
 
-Use `--region eu` for the EU datacenter. Use `--jq` to filter JSON output.
+Use `--region eu` for the EU datacenter.
+
+Output modes:
+- `--json`: force JSON output
+- `--plain`: compact/plain output
+- `--jq`: filter JSON output (only valid when `--plain` is not used)
 
 Run `cio --help` for all commands, or `cio <command> --help` for subcommand details.
 
@@ -69,10 +74,12 @@ Run `cio --help` for all commands, or `cio <command> --help` for subcommand deta
 ## Development
 
 ```bash
+make ci             # Full quality gate (prek + fmt + vet + tests + lint)
 make test           # Unit tests + BDD tests
 make test-unit      # Unit tests only
 make lint           # golangci-lint
 make all            # Cross-compile all platforms → dist/
+make audit          # Workflow + release naming audits
 make help           # Show all targets
 ```
 
@@ -95,3 +102,10 @@ Maintainers can trigger a release by commenting on any Issue or PR:
 ```
 
 Or use the **Release Command** workflow dispatch in GitHub Actions.
+
+Release naming is centralized in `release-naming.env`.
+To print a download command for a tag:
+
+```bash
+scripts/print-release-download.sh v0.1.0
+```

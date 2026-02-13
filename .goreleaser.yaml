@@ -1,5 +1,7 @@
 version: 2
 
+project_name: cio
+
 builds:
   - binary: cio
     env:
@@ -21,7 +23,8 @@ builds:
       - -X github.com/leechael/cio/cmd.date={{.Date}}
 
 archives:
-  - format: tar.gz
+  - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    format: tar.gz
     format_overrides:
       - goos: windows
         format: zip
