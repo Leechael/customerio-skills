@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -48,21 +47,25 @@ func (b *bddContext) theMockServerRespondsToWith(route string, body *godog.DocSt
 	return nil
 }
 
-func (b *bddContext) cioBinary() string {
-	if bin := os.Getenv("CIO_BINARY"); bin != "" {
-		return bin
+func (b *bddContext) commandFor(command string) (*exec.Cmd, error) {
+	args := strings.Fields(command)
+	if len(args) == 0 {
+		return nil, fmt.Errorf("empty command")
 	}
-	return filepath.Join("..", "cio")
+
+	if bin := os.Getenv("CIO_BINARY"); bin != "" {
+		return exec.Command(bin, args[1:]...), nil
+	}
+
+	goArgs := append([]string{"run", ".."}, args[1:]...)
+	return exec.Command("go", goArgs...), nil
 }
 
 func (b *bddContext) iRun(command string) error {
-	args := strings.Fields(command)
-	if len(args) == 0 {
-		return fmt.Errorf("empty command")
+	cmd, err := b.commandFor(command)
+	if err != nil {
+		return err
 	}
-	args[0] = b.cioBinary()
-
-	cmd := exec.Command(args[0], args[1:]...)
 	out, err := cmd.CombinedOutput()
 	b.output = string(out)
 	b.exitCode = 0
@@ -77,13 +80,10 @@ func (b *bddContext) iRun(command string) error {
 }
 
 func (b *bddContext) iRunAgainstTheMockServer(command string) error {
-	args := strings.Fields(command)
-	if len(args) == 0 {
-		return fmt.Errorf("empty command")
+	cmd, err := b.commandFor(command)
+	if err != nil {
+		return err
 	}
-	args[0] = b.cioBinary()
-
-	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Env = append(os.Environ(),
 		"CIO_BASE_URL="+b.mockServer.URL,
 		"CUSTOMERIO_API_TOKEN=test-token",
@@ -102,13 +102,10 @@ func (b *bddContext) iRunAgainstTheMockServer(command string) error {
 }
 
 func (b *bddContext) iRunWithoutAnAPIToken(command string) error {
-	args := strings.Fields(command)
-	if len(args) == 0 {
-		return fmt.Errorf("empty command")
+	cmd, err := b.commandFor(command)
+	if err != nil {
+		return err
 	}
-	args[0] = b.cioBinary()
-
-	cmd := exec.Command(args[0], args[1:]...)
 	var env []string
 	for _, e := range os.Environ() {
 		if !strings.HasPrefix(e, "CUSTOMERIO_API_TOKEN=") {

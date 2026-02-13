@@ -16,7 +16,7 @@ PLATFORMS := \
   darwin/arm64 \
   windows/amd64
 
-.PHONY: build test test-unit test-bdd lint clean all release-snapshot help
+.PHONY: build all test test-unit test-bdd lint fmt-check vet check-prek ci clean release-snapshot audit help
 
 ## build: Build for current platform
 build:
@@ -32,8 +32,29 @@ $(PLATFORMS):
 	CGO_ENABLED=0 GOOS=$(GOOS) GOARCH=$(GOARCH) \
 		go build -ldflags "$(LDFLAGS)" -o dist/$(BINARY)-$(GOOS)-$(GOARCH)$(EXT) .
 
-## test: Run all tests (unit + BDD)
-test: test-unit test-bdd
+## check-prek: Run pre-commit checks when prek.toml exists
+check-prek:
+	@if [ -f prek.toml ]; then \
+		command -v prek >/dev/null 2>&1 || { echo "prek.toml exists but 'prek' is not installed" >&2; exit 1; }; \
+		prek validate-config; \
+		prek run --all-files; \
+	fi
+
+## fmt-check: Ensure gofmt is clean
+fmt-check:
+	@unformatted=$$(gofmt -l $$(find . -type f -name '*.go' -not -path './bin/*' -not -path './dist/*')); \
+	if [ -n "$$unformatted" ]; then \
+		echo "Unformatted files:"; \
+		echo "$$unformatted"; \
+		exit 1; \
+	fi
+
+## vet: Run go vet
+vet:
+	go vet ./...
+
+## test: Run all tests (unit + BDD), with pre-commit checks first
+test: check-prek test-unit test-bdd
 
 ## test-unit: Run unit tests
 test-unit:
@@ -47,13 +68,21 @@ test-bdd: build
 lint:
 	golangci-lint run ./...
 
+## ci: Full local/CI quality gate
+ci: check-prek fmt-check vet test lint
+
 ## release-snapshot: Local GoReleaser dry-run (no publish)
 release-snapshot:
 	goreleaser build --snapshot --clean
 
+## audit: Audit workflows and release naming contract
+audit:
+	scripts/audit-workflows.sh .
+	scripts/audit-release-naming.sh .
+
 ## clean: Remove build artifacts
 clean:
-	rm -rf $(BINDIR)/ dist/
+	rm -rf $(BINDIR)/ dist/ cio
 
 ## help: Show this help
 help:

@@ -47,6 +47,8 @@ func resetFlags(cmd *cobra.Command) {
 func executeCommand(args ...string) (string, error) {
 	jqExpr = ""
 	region = "us"
+	jsonOutput = false
+	plainOutput = false
 	resetFlags(rootCmd)
 
 	old := os.Stdout
@@ -329,6 +331,21 @@ func TestJQFilter(t *testing.T) {
 	}
 	if strings.TrimSpace(out) != "VIP" {
 		t.Fatalf("got %q", out)
+	}
+}
+
+func TestJQRequiresJSONMode(t *testing.T) {
+	cleanup := setupTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"segments":[]}`))
+	})
+	defer cleanup()
+
+	_, err := executeCommand("segments", "ls", "--plain", "--jq", ".segments[0]")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+	if !strings.Contains(err.Error(), "--jq requires JSON output mode") {
+		t.Fatalf("got %q", err.Error())
 	}
 }
 

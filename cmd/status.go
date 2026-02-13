@@ -21,7 +21,7 @@ func init() {
 				fmt.Fprintln(os.Stderr, "")
 				fmt.Fprintln(os.Stderr, "Or use 1Password CLI:")
 				fmt.Fprintln(os.Stderr, "  op run --env-file=.env -- cio status")
-				os.Exit(1)
+				return fmt.Errorf("missing CUSTOMERIO_API_TOKEN")
 			}
 
 			c, err := newClient()
@@ -35,13 +35,22 @@ func init() {
 				fmt.Fprintln(os.Stderr, "")
 				fmt.Fprintln(os.Stderr, "Your CUSTOMERIO_API_TOKEN may be invalid or expired.")
 				fmt.Fprintln(os.Stderr, "Get a new key from: https://fly.customer.io/settings/api_credentials")
-				os.Exit(1)
+				return fmt.Errorf("authentication failed")
 			}
 
 			masked := "***"
 			if len(token) >= 8 {
 				masked = token[:4] + "..." + token[len(token)-4:]
 			}
+
+			if jsonOutput {
+				return printObject(map[string]any{
+					"authenticated": true,
+					"region":        region,
+					"token":         masked,
+				})
+			}
+
 			fmt.Printf("Authenticated (%s)\n", masked)
 			fmt.Printf("Region: %s\n", region)
 			return nil

@@ -1,0 +1,46 @@
+name: Release On Tag
+
+on:
+  push:
+    tags:
+      # Keep in sync with release-naming.env: TAG_PREFIX
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to rebuild/release"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install prek
+        if: ${{ hashFiles('prek.toml') != '' }}
+        run: cargo install --locked prek
+
+      - name: Quality gate
+        run: make ci
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

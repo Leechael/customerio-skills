@@ -12,13 +12,24 @@ import (
 )
 
 var (
-	region string
-	jqExpr string
+	region      string
+	jqExpr      string
+	jsonOutput  bool
+	plainOutput bool
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "cio",
 	Short: "CLI for Customer.io App API",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if jsonOutput && plainOutput {
+			return fmt.Errorf("--json and --plain cannot be used together")
+		}
+		if jqExpr != "" && plainOutput {
+			return fmt.Errorf("--jq requires JSON output mode (remove --plain or use --json)")
+		}
+		return nil
+	},
 }
 
 func Execute() {
@@ -30,6 +41,8 @@ func Execute() {
 func init() {
 	rootCmd.PersistentFlags().StringVar(&region, "region", "us", "API region: us or eu")
 	rootCmd.PersistentFlags().StringVar(&jqExpr, "jq", "", "jq expression to filter JSON output")
+	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "force JSON output")
+	rootCmd.PersistentFlags().BoolVar(&plainOutput, "plain", false, "print compact/plain output")
 }
 
 var newClient = func() (*client.Client, error) {
@@ -37,7 +50,18 @@ var newClient = func() (*client.Client, error) {
 }
 
 func printJSON(data json.RawMessage) error {
+	if plainOutput {
+		return output.PrintPlain(data)
+	}
 	return output.Print(data, jqExpr)
+}
+
+func printObject(v any) error {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	return printJSON(data)
 }
 
 func readBody(cmd *cobra.Command) (json.RawMessage, error) {
