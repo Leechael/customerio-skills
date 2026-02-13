@@ -27,16 +27,20 @@ done
 
 echo "Auditing release naming in $repo_dir"
 
-if rg -n "your-cli|your-cli-v" "$workflows_dir" >/dev/null; then
-  echo "found unreplaced template placeholders in workflows" >&2
-  rg -n "your-cli|your-cli-v" "$workflows_dir" >&2
+if ! rg -n --fixed-strings "${TAG_PREFIX}*" "$workflows_dir/release-on-tag.yml" >/dev/null; then
+  echo "release-on-tag.yml trigger does not match TAG_PREFIX: ${TAG_PREFIX}*" >&2
   exit 1
 fi
 
-tag_glob="${TAG_PREFIX}*"
-if ! rg -n --fixed-strings "$tag_glob" "$workflows_dir" >/dev/null; then
-  echo "no workflow tag trigger matches TAG_PREFIX pattern: $tag_glob" >&2
-  exit 1
-fi
+for f in "$workflows_dir/release-command.yml" "$workflows_dir/release-on-tag.yml" "$repo_dir/scripts/next-version.sh" "$repo_dir/scripts/print-release-download.sh"; do
+  if [[ ! -f "$f" ]]; then
+    echo "missing required file: $f" >&2
+    exit 1
+  fi
+  if ! rg -n "release-naming.env|TAG_PREFIX|BINARY_NAME|ARTIFACT_GLOB" "$f" >/dev/null; then
+    echo "file does not appear to use naming contract: $f" >&2
+    exit 1
+  fi
+done
 
 echo "release naming audit passed"
