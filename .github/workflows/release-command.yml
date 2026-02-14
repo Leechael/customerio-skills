@@ -52,6 +52,10 @@ jobs:
               }
             };
 
+            if (!/!release\b/i.test(body)) {
+              return;
+            }
+
             const match = body.match(/!release\s+(patch|minor|major)/i);
             if (!match) {
               await safeComment(`@${actor} invalid command. Use: \`!release <patch|minor|major>\`.`);
