@@ -24,13 +24,7 @@ permissions:
 
 jobs:
   parse:
-    if: >
-      github.event_name == 'issue_comment' &&
-      (
-        contains(github.event.comment.body, '!release') ||
-        contains(github.event.comment.body, '!Release') ||
-        contains(github.event.comment.body, '!RELEASE')
-      )
+    if: github.event_name == 'issue_comment'
     runs-on: ubuntu-latest
     outputs:
       should_release: ${{ steps.parse.outputs.should_release }}
@@ -154,7 +148,7 @@ jobs:
 
   dispatch-release:
     needs: [create-tag]
-    if: needs.create-tag.result == 'success'
+    if: needs['create-tag'].result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger release workflow by tag
@@ -162,11 +156,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const tag = '${{ needs.create-tag.outputs.tag }}';
+            const tag = "${{ needs['create-tag'].outputs.tag }}";
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'release.yml',
+              workflow_id: 'release-on-tag.yml',
               ref: 'main',
               inputs: { tag },
             });
