@@ -9,13 +9,9 @@ builds:
     goos:
       - linux
       - darwin
-      - windows
     goarch:
       - amd64
       - arm64
-    ignore:
-      - goos: windows
-        goarch: arm64
     ldflags:
       - -s -w
       - -X github.com/leechael/cio/cmd.version={{.Version}}
@@ -23,11 +19,8 @@ builds:
       - -X github.com/leechael/cio/cmd.date={{.Date}}
 
 archives:
-  - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+  - name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
     format: tar.gz
-    format_overrides:
-      - goos: windows
-        format: zip
 
 checksum:
   name_template: checksums.txt

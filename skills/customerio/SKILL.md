@@ -19,23 +19,21 @@ Check if `cio` is available:
 command -v cio || echo "NOT INSTALLED"
 ```
 
-If not installed, download the latest release for the current platform:
+If not installed, install from GitHub Releases:
 
 ```bash
-# Detect OS and architecture
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')
-ARCH=$(uname -m)
-case "$ARCH" in
-  x86_64) ARCH="amd64" ;;
-  aarch64|arm64) ARCH="arm64" ;;
-esac
+# 1) Inspect releases
+gh release list -R Leechael/customerio-skills
 
-# Download latest release
-curl -sL "https://github.com/Leechael/customerio-skills/releases/latest/download/cio-${OS}-${ARCH}" -o /usr/local/bin/cio
-chmod +x /usr/local/bin/cio
+# 2) Download latest artifacts
+gh release download -R Leechael/customerio-skills --pattern 'cio-*.tar.gz'
+
+# 3) Extract your platform artifact and install binary
+tar -xzf cio-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz
+install -m 0755 cio /usr/local/bin/cio
 ```
 
-If `/usr/local/bin` is not writable, use `~/.local/bin` or another directory in `$PATH`.
+If `/usr/local/bin` is not writable, use `~/.local/bin` (or another writable directory in `$PATH`).
 
 ### 2. Configure API Token
 
